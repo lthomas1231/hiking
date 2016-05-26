@@ -1,0 +1,94 @@
+// server.js
+
+// BASE SETUP
+// =============================================================================
+
+// call the packages we need
+var express    = require('express');        // call express
+var app        = express();                 // define our app using express
+var bodyParser = require('body-parser');
+var mongoose   = require('mongoose');
+var mongodb = require("mongodb");
+var client = require('mongodb').MongoClient;
+mongoose.connect('mongodb://localhost:27017/hiking');
+var Visted = require('./app/models/visited');
+var mongoUri = process.env.MONGOLAB_URI ||
+  process.env.MONGOHQ_URL ||
+  'mongodb://localhost:27017/hiking';
+ var mongoServer = new mongodb.Server('localhost', 27017);
+ var dbConnector = new mongodb.Db('systemMonitor', mongoServer);
+ var db;
+
+// configure app to use bodyParser()
+// this will let us get the data from a POST
+app.use(bodyParser.urlencoded({ extended: true }));
+app.use(bodyParser.json());
+
+var port = process.env.PORT || 3000;        // set our port
+
+// ROUTES FOR OUR API
+// =============================================================================
+var router = express.Router();              // get an instance of the express Router
+
+// middleware to use for all requests
+router.use(function(req, res, next) {
+	// set headers for cross domain in middle ware so it's used for all requests
+	 res.header("Access-Control-Allow-Origin", "*");
+ 	 res.header('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE');
+ 	 res.header("Access-Control-Allow-Headers", "X-Requested-With, Content-Type");
+	// just log for now
+	console.log('You\'re inside the middleware. Somethings about to go down');
+	next(); //make sure we go to the next routes and don't stop here
+});
+
+// test route to make sure everything is working (accessed at GET http://localhost:8080/api)
+router.get('/', function(req, res) {
+    res.json({ message: 'hooray! welcome to our api!' });   
+});
+
+// more routes for our API will happen here
+
+router.route('/addvisited').post(function(req,res) {
+
+	client.connect(mongoUri, function(err, db) {
+		db.createCollection("visited", function(err, visitedRecords) {
+			visitedRecords.insert({"trailhead": req.body.trailhead, "date": req.body.date, "lat": req.body.lat, "lon": req.body.lon, "comments": req.body.comments}, function() {
+				console.log('inserted the record')});
+			res.json('Added trailhead ' + req.body.trailhead + ' to visited db');
+		});
+	});
+});
+
+
+router.route('/getvisited').get(function(req,res) {
+	client.connect(mongoUri, function(err, db) {
+		db.createCollection("visited", function(err, visitedRecords) {
+			if (err) {
+				console.log('first error ' + err);
+			}
+			visitedRecords.find({}).toArray(function(error, result) {
+    			if (err) throw error;
+
+    			// return jsonp for cross origin issues
+    			res.jsonp(result);
+			});
+			console.log('inside the GET');
+		});
+	});
+});
+
+
+// REGISTER OUR ROUTES -------------------------------
+// all of our routes will be prefixed with /api
+app.use('/api', router);
+
+// START THE SERVER
+// =============================================================================
+dbConnector.open(function(err, opendb) {
+	if (err) throw err;
+	db = opendb;
+});
+
+app.listen(port);
+console.log('Magic happens on port ' + port);
+
