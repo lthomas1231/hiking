@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Badass Hikers</title>
+	<link rel="shortcut icon" href="C://Users//Lacy//Pictures//mountainMeta.png"/>
+	<script src='https://api.mapbox.com/mapbox.js/v2.2.2/mapbox.js'></script>
+	<link href='https://api.mapbox.com/mapbox.js/v2.2.2/mapbox.css' rel='stylesheet' />
+	<script type="text/javascript" src="http://code.jquery.com/jquery-1.7.1.min.js"></script>
+	<iframe width='100%' height='500px' frameBorder='0' src='https://a.tiles.mapbox.com/v4/lthomas2.cif4ldn520ekjs1klcc6fv8di/attribution,zoompan,zoomwheel,geocoder,share.html?access_token=pk.eyJ1IjoibHRob21hczIiLCJhIjoiY2lmNGxkb2NjMGVya3N1a2xtaWNrdzRmcSJ9.3TX1rDiH1acJAjjqejZEjg'></iframe>
+
+</head>
+
+
+<style>
+
+
+	.leaflet-control-attribution{
+		display: none;
+	}
+
+	#output_latlng {
+		text-align: center;
+		position: absolute;
+		bottom: 10px;
+		right: 10px;
+		min-height: 25px;
+		min-width: 125px;
+		background-color: rgba(255,255,255,.5);
+		border: 1px solid #999;
+		border-color: rgba(0,0,0,.4);
+		border-top: 0; border-bottom: 0;
+		padding: 2px 5px 1px;
+		white-space: nowrap;
+		overflow: hidden;
+	}
+	
+	#location_form {
+		min-height: 100px;
+		min-width: 100px;
+	}
+	
+	
+	.active_button {
+		background-color:#fff;
+		color: #a02b22;
+	}
+	
+	#addHikesToMap {
+		min-height:40px;
+		min-width:125px;
+		left:115px;
+		top:50px;
+		border: 1px solid #999;
+		background-color: rgba(255,255,255,.5);
+		background-color: rgba(188, 125, 44, 0.4);
+		position: absolute;
+	}
+	
+	#clearPastHikes {
+		min-height:40px;
+		min-width:125px;
+		left:115px;
+		top:120px;
+		border: 1px solid #999;
+		background-color: rgba(255,255,255,.5);
+		background-color: rgba(188, 125, 44, 0.4);
+		position: absolute;
+	}
+	
+	
+</style>
+
+
+
+<body>
+	<div id="map" style="position:absolute; top:0px; left:0; right:0; bottom:0;">
+	</div>
+
+	<pre id='features'></pre>
+	
+	<button type="button" id="addHikesToMap">Show Past Hikes</button>
+	
+	<button type="button" id="clearPastHikes">Clear Pins</button>
+
+	<div class="hidden-xs" id="output_latlng">
+		39.50, -98.35
+	</div>
+	
+</body>
+
+<script>
+	//==========================================================================
+	//MAPBOX ===================================================================
+	//==========================================================================
+		
+		// TODO
+		// differentiate pins from where we're dropping to save information and where we are plotting past hikes
+		// want to eventually be able to click past hike pins to get the information we stored associated with
+		// that pin (maybe have to do it on REST return?)
+
+		L.mapbox.accessToken = 'pk.eyJ1IjoibHRob21hczIiLCJhIjoiY2lmNGxkb2NjMGVya3N1a2xtaWNrdzRmcSJ9.3TX1rDiH1acJAjjqejZEjg';
+
+		var map = L.mapbox.map('map', 'lthomas2.cif4ldn520ekjs1klcc6fv8di', {
+			maxZoom: 19,
+			minZoom: 4,
+			zoomControl: false
+		});
+
+		map.setView([39,-98], 5);
+		new L.Control.Zoom({ position: 'topright' }).addTo(map);
+
+		var myLayer = L.mapbox.featureLayer().addTo(map);
+
+		var pinLayers = L.layerGroup().addTo(map);
+
+		var featureGroup = L.featureGroup().addTo(map);
+
+		var gridLayers = L.layerGroup().addTo(map);
+		
+		L.control.scale().addTo(map);
+
+		var pastHikes = [[]];
+
+		var baseUrl = 'http://localhost:3000';
+
+		//log latlng of mouse
+		map.on('mousemove', function(e) {
+			$("#output_latlng").html(e.latlng.lat.toFixed(2) + ' , ' + e.latlng.lng.toFixed(2));
+		});
+		
+		// click to drop pin and click again for pop up trailhead form
+		map.on('click', function(e) {
+				$("#area_search").val("");
+				lat = e.latlng.lat.toFixed(2);
+				lon = e.latlng.lng.toFixed(2);
+
+				// if pin is not a past hike, create new pin
+				// and bind with pop up option to add trail information
+					if (e.latlng.lat >= -90 && e.latlng.lat <= 90 && e.latlng.lng >= -180 && e.latlng.lng <= 180){
+						var pinLayer = L.marker([e.latlng.lat, e.latlng.lng], {
+								icon: L.mapbox.marker.icon({
+									'marker-color': '#27ae60'
+								})
+							})
+							.bindPopup("<div class='text-center help-block'>" 
+								+ " <form id='enter_location'>Trailhead:<br><input type='text'"
+								+ " id='trailheadinput'><br>Date<br><input type='text' "
+								+ "id='dateinput'><br>Comments<br><textarea rows='4' cols='24'"
+								+ " id='commentsinput' style='height:100px;width:173px'></textarea>"
+								+ "<br><br><input type='button' onClick='addTrailFunction()' "
+								+ "value='Add to Map'> </form> [" + e.latlng.lat.toFixed(2) 
+								+ ',' + e.latlng.lng.toFixed(2) + "]<br><br></div>");
+						pinLayer.addTo(pinLayers);
+						$("#area_search").val(e.latlng.lat.toFixed(2) + ", " + e.latlng.lng.toFixed(2));
+						map.setView([(e.latlng.lat), (e.latlng.lng)], 10);
+					} else {
+						//TODO fix this to make a pop up
+						console.log("Invalid Coordinates", 
+							"Coordinates must be between Latitude -90 to 90 and Longitude -180 to 180");
+					};
+		});
+
+		// uses the form from the pin drop to add data to mongo hiking db
+		function addTrailFunction() {
+			// create data object with input trail information
+			trailData = {
+				"trailhead":trailheadinput.value, 
+				"date":dateinput.value, 
+				"lat":lat, 
+				"lon":lon, 
+				"comments":commentsinput.value} 
+			
+			$.ajax({type: "POST",
+				url: baseUrl + '/api/addvisited',
+				data: trailData,
+				crossDomain: true,
+				success: function(data) {
+					alert(data)
+
+					map.setView([39,-98], 5);
+					map.closePopup();
+
+					bindTrailInformationToPin(trailData);	
+
+				}, 
+				error: function(data) {
+					console.log("ERROR: " + data);
+				}
+			})
+		}
+
+		// remove hike from db with matching trailhead
+		// lat, and lon (in case 2 hikes have same trailhead)
+		function removeTrailFunction(trailhead, lat, lon) {
+
+			var trailObject = {
+				trailhead,
+				lat,
+				lon
+			}
+
+			$.ajax({type: "POST",
+				url: baseUrl + '/api/deletevisited',
+				data: trailObject,
+				crossDomain: true,
+				success: function(data) {
+					map.setView([39,-98], 5);
+					map.closePopup();
+
+					// look through each pin in pinlayer until 
+					// current pin is found and remove it
+					pinLayers.eachLayer(function(layer) {
+						if (layer._latlng.lat == trailObject.lat 
+							&& layer._latlng.lng == trailObject.lon) {
+							map.removeLayer(layer);
+						}
+					});
+
+				}, 
+				error: function(data) {
+					alert("Unable to remove hike.")
+					// don't call toString method on error data
+					console.log("ERROR: " + data);
+				}
+			})
+		}
+
+		$('#addHikesToMap').click(function() {
+			$.ajax({type: "GET",
+				url: baseUrl + '/api/getvisited',
+				crossDomain: true,
+				success: function(data) {
+
+					// create array of past hikes
+					data.forEach(function(trail) {
+						pastHikes.push([
+							trail.lat, 
+							trail.lon, 
+							trail.trailhead, 
+							trail.date, 
+							trail.comments]);
+
+						bindTrailInformationToPin(trail);
+					});
+					
+					
+					}, 
+				error: function(data) {
+					console.log("ERROR: ", data);
+					console.log(data.offset);
+				}
+			})
+		});
+		
+		// remove all pins from the screen
+		$('#clearPastHikes').click(function() {
+			pinLayers.clearLayers();
+		})
+
+		// bind all relevant trail information to location pin
+		function bindTrailInformationToPin(trailData) {
+			// create pin for each hike location
+			var pinLayer = L.marker([trailData.lat, trailData.lon], {
+				icon: L.mapbox.marker.icon({
+					'marker-color': '#27ae60'
+				})
+			});
+
+			// add trail information to each "layer" (pin for past hike)
+			// before adding all layers to the pinLayer
+			pinLayer.bindPopup('<div class="text-center help-block">' 
+						+ trailData.lat + ', ' + trailData.lon + '<br>' 
+						+ trailData.trailhead + '<br>' + trailData.date + '<br>' 
+						+ trailData.comments + '<br><br>'
+						+ '<input type="button" onClick="removeTrailFunction(\'' 
+							+ trailData.trailhead + '\',\'' 
+							+ trailData.lat + '\',\'' 
+							+ trailData.lon + '\')" '
+						+ 'value="Remove"> </div>')
+			pinLayer.addTo(pinLayers);
+		}
+
+</script>
