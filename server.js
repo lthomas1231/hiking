@@ -16,7 +16,7 @@ var mongoUri = process.env.MONGOLAB_URI ||
   process.env.MONGOHQ_URL ||
   'mongodb://localhost:27017/hiking';
  var mongoServer = new mongodb.Server('localhost', 27017);
- var dbConnector = new mongodb.Db('systemMonitor', mongoServer);
+ var dbConnector = new mongodb.Db('systemMonitor', mongoServer, {w:1});
  var db;
 
 // configure app to use bodyParser()
