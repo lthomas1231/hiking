@@ -36,8 +36,6 @@ router.use(function(req, res, next) {
 	 res.header("Access-Control-Allow-Origin", "*");
  	 res.header('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE');
  	 res.header("Access-Control-Allow-Headers", "X-Requested-With, Content-Type");
-	// just log for now
-	console.log('You\'re inside the middleware. Somethings about to go down');
 	next(); //make sure we go to the next routes and don't stop here
 });
 
@@ -59,6 +57,22 @@ router.route('/addvisited').post(function(req,res) {
 	});
 });
 
+router.route('/deletevisited').post(function(req,res) {
+	client.connect(mongoUri, function(err, db) {
+		db.createCollection("visited", function(err, visitedRecords) {
+			// remove object that has given lat/lon/trailhead
+			visitedRecords.remove({
+				"lat": req.body.lat, 
+				"lon": req.body.lon, 
+				"trailhead": req.body.trailhead}, 
+				function() {
+				console.log('deleted the record')});
+
+			res.json('Removed trailhead ' + req.body.trailhead + ' from visited db');
+		});
+	});
+});
+
 
 router.route('/getvisited').get(function(req,res) {
 	client.connect(mongoUri, function(err, db) {
@@ -72,7 +86,22 @@ router.route('/getvisited').get(function(req,res) {
     			// return jsonp for cross origin issues
     			res.jsonp(result);
 			});
-			console.log('inside the GET');
+		});
+	});
+});
+
+router.route('/gethikefortrailhead').get(function(req,res) {
+	client.connect(mongoUri, function(err, db) {
+		db.createCollection("visited", function(err, visitedRecords) {
+			if (err) {
+				console.log('first error ' + err);
+			}
+			visitedRecords.find({trailhead:req.query.trailhead}).toArray(function(error, result) {
+    			if (err) throw error;
+
+    			// return jsonp for cross origin issues
+    			res.jsonp(result);
+			});
 		});
 	});
 });
