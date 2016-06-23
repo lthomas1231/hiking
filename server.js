@@ -10,7 +10,7 @@ var bodyParser = require('body-parser');
 var mongoose   = require('mongoose');
 var mongodb = require("mongodb");
 var client = require('mongodb').MongoClient;
-mongoose.connect('mongodb://localhost:27017/hiking');
+//mongoose.connect('mongodb://localhost:27017/hiking');
 var Visted = require('./app/models/visited');
 var mongoUri = process.env.MONGOLAB_URI ||
   process.env.MONGOHQ_URL ||
