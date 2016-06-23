@@ -15,8 +15,8 @@ var Visted = require('./app/models/visited');
 var mongoUri = process.env.MONGOLAB_URI ||
   process.env.MONGOHQ_URL ||
   'mongodb://localhost:27017/hiking';
- var mongoServer = new mongodb.Server('localhost', 27017);
- var dbConnector = new mongodb.Db('systemMonitor', mongoServer, {w:1});
+ //var mongoServer = new mongodb.Server('localhost', 27017);
+ //var dbConnector = new mongodb.Db('systemMonitor', mongoServer, {w:1});
  var db;
 
 // configure app to use bodyParser()
@@ -113,10 +113,10 @@ app.use('/api', router);
 
 // START THE SERVER
 // =============================================================================
-dbConnector.open(function(err, opendb) {
-	if (err) throw err;
-	db = opendb;
-});
+// dbConnector.open(function(err, opendb) {
+// 	if (err) throw err;
+// 	db = opendb;
+// });
 
 app.listen(port);
 console.log('Magic happens on port ' + port);
