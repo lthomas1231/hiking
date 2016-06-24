@@ -121,7 +121,7 @@
 
 		var pastHikes = [[]];
 
-		var baseUrl = 'http://localhost:3000';
+		var baseUrl = location.origin;
 
 		//log latlng of mouse
 		map.on('mousemove', function(e) {
@@ -226,6 +226,7 @@
 		}
 
 		$('#addHikesToMap').click(function() {
+			console.log(baseUrl+'/api/getvisited');
 			$.ajax({type: "GET",
 				url: baseUrl + '/api/getvisited',
 				crossDomain: true,
