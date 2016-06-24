@@ -10,13 +10,9 @@ var bodyParser = require('body-parser');
 var mongoose   = require('mongoose');
 var mongodb = require("mongodb");
 var client = require('mongodb').MongoClient;
-//mongoose.connect('mongodb://localhost:27017/hiking');
-var Visted = require('./app/models/visited');
 var mongoUri = process.env.MONGOLAB_URI ||
   process.env.MONGOHQ_URL ||
   'mongodb://localhost:27017/hiking';
- //var mongoServer = new mongodb.Server('localhost', 27017);
- //var dbConnector = new mongodb.Db('systemMonitor', mongoServer, {w:1});
  var db;
 
 // configure app to use bodyParser()
@@ -47,7 +43,8 @@ router.get('/', function(req, res) {
 // more routes for our API will happen here
 
 router.route('/addvisited').post(function(req,res) {
-
+	console.log('inside the function addvisited');
+	console.log('request: ' + req);
 	client.connect(mongoUri, function(err, db) {
 		db.createCollection("visited", function(err, visitedRecords) {
 			visitedRecords.insert({"trailhead": req.body.trailhead, "date": req.body.date, "lat": req.body.lat, "lon": req.body.lon, "comments": req.body.comments}, function() {
@@ -114,11 +111,6 @@ app.use(express.static(__dirname));
 
 // START THE SERVER
 // =============================================================================
-// dbConnector.open(function(err, opendb) {
-// 	if (err) throw err;
-// 	db = opendb;
-// });
-
 app.listen(port);
 console.log('Magic happens on port ' + port);
 
