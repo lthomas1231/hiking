@@ -44,7 +44,7 @@ router.get('/', function(req, res) {
 
 router.route('/addvisited').post(function(req,res) {
 	console.log('inside the function addvisited');
-	console.log('request: ' + req.body);
+	console.log('mongo: ' + mongoUri);
 	client.connect(mongoUri, function(err, db) {
 		console.log('connected to db');
 		db.createCollection("visited", function(err, visitedRecords) {
