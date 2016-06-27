@@ -48,6 +48,9 @@ router.route('/addvisited').post(function(req,res) {
 	client.connect(mongoUri, function(err, db) {
 		console.log('connected to db');
 		db.createCollection("visited", function(err, visitedRecords) {
+			if (err) {
+				console.log('error inside addvisited: ' + err);
+			}
 			visitedRecords.insert({"trailhead": req.body.trailhead, "date": req.body.date, "lat": req.body.lat, "lon": req.body.lon, "comments": req.body.comments}, function() {
 				console.log('inserted the record')});
 			res.json('Added trailhead ' + req.body.trailhead + ' to visited db');
