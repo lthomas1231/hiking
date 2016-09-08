@@ -148,10 +148,10 @@
 								+ "id='dateinput'><br>Comments<br><textarea rows='4' cols='24'"
 								+ " id='commentsinput' style='height:100px;width:173px'></textarea>"
 								+ "<br><br><input type='button' onClick='addTrailFunction()' "
-								+ "value='Add to Map'> </form> [" + e.latlng.lat.toFixed(2) 
-								+ ',' + e.latlng.lng.toFixed(2) + "]<br><br></div>");
+								+ "value='Add to Map'> </form> [" + e.latlng.lat.toFixed(3) 
+								+ ',' + e.latlng.lng.toFixed(3) + "]<br><br></div>");
 						pinLayer.addTo(pinLayers);
-						$("#area_search").val(e.latlng.lat.toFixed(2) + ", " + e.latlng.lng.toFixed(2));
+						$("#area_search").val(e.latlng.lat.toFixed(3) + ", " + e.latlng.lng.toFixed(3));
 						map.setView([(e.latlng.lat), (e.latlng.lng)], 10);
 					} else {
 						//TODO fix this to make a pop up
