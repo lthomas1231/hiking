@@ -125,14 +125,14 @@
 
 		//log latlng of mouse
 		map.on('mousemove', function(e) {
-			$("#output_latlng").html(e.latlng.lat.toFixed(2) + ' , ' + e.latlng.lng.toFixed(2));
+			$("#output_latlng").html(e.latlng.lat.toFixed(3) + ' , ' + e.latlng.lng.toFixed(3));
 		});
 		
 		// click to drop pin and click again for pop up trailhead form
 		map.on('click', function(e) {
 				$("#area_search").val("");
-				lat = e.latlng.lat.toFixed(2);
-				lon = e.latlng.lng.toFixed(2);
+				lat = e.latlng.lat.toFixed(3);
+				lon = e.latlng.lng.toFixed(3);
 
 				// if pin is not a past hike, create new pin
 				// and bind with pop up option to add trail information
