@@ -11,9 +11,9 @@ var mongoose   = require('mongoose');
 var mongodb = require("mongodb");
 var client = require('mongodb').MongoClient;
 var mongoUri = process.env.MONGOLAB_URI ||
-  process.env.MONGOHQ_URL; 
-  //||
-  //'mongodb://localhost:27017/hiking';
+  process.env.MONGOHQ_URL 
+  || 'mongodb://localhost:27017/hiking' ||
+  'mongodb://lthomas:password@ds023054.mlab.com:23054/heroku_fb2fccgv';
  var db;
 
 // configure app to use bodyParser()
