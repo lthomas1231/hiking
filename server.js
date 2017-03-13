@@ -12,7 +12,7 @@ var mongodb = require("mongodb");
 var client = require('mongodb').MongoClient;
 var mongoUri = process.env.MONGOLAB_URI ||
   process.env.MONGOHQ_URL 
-  || 'mongodb://lthomas:password@ds023054.mlab.com:23054/heroku_fb2fccgv'
+  //|| 'mongodb://lthomas:password@ds023054.mlab.com:23054/heroku_fb2fccgv'
   || 'mongodb://localhost:27017/hiking';
  var db;
 

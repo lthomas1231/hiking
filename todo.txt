@@ -1,0 +1,4 @@
+TODO:
+Geolocator
+Ability to add pictures
+Accounts with associated dbs
